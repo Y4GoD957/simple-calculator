@@ -2,30 +2,33 @@
   <div class="calculator">
     <input type="text" class="calculator-screen" readonly v-model="displayValue" />
     <div class="calculator-keys">
-      <button class="all-clear" @click="clearAll">AC</button>
-      <button @click="appendOperator('%')">%</button>
-      <button @click="appendOperator('/')">/</button>
+      <button class="all-clear" @click="handleButtonClick('clearAll')">AC</button>
+      <button @click="handleButtonClick('appendOperator', '%')">%</button>
+      <button @click="handleButtonClick('appendOperator', '/')">/</button>
 
-      <button @click="appendNumber('7')">7</button>
-      <button @click="appendNumber('8')">8</button>
-      <button @click="appendNumber('9')">9</button>
-      <button @click="appendOperator('*')">*</button>
+      <button @click="handleButtonClick('appendNumber', '7')">7</button>
+      <button @click="handleButtonClick('appendNumber', '8')">8</button>
+      <button @click="handleButtonClick('appendNumber', '9')">9</button>
+      <button @click="handleButtonClick('appendOperator', '*')">*</button>
 
-      <button @click="appendNumber('4')">4</button>
-      <button @click="appendNumber('5')">5</button>
-      <button @click="appendNumber('6')">6</button>
-      <button @click="appendOperator('-')">-</button>
+      <button @click="handleButtonClick('appendNumber', '4')">4</button>
+      <button @click="handleButtonClick('appendNumber', '5')">5</button>
+      <button @click="handleButtonClick('appendNumber', '6')">6</button>
+      <button @click="handleButtonClick('appendOperator', '-')">-</button>
 
-      <button @click="appendNumber('1')">1</button>
-      <button @click="appendNumber('2')">2</button>
-      <button @click="appendNumber('3')">3</button>
-      <button @click="appendOperator('+')">+</button>
+      <button @click="handleButtonClick('appendNumber', '1')">1</button>
+      <button @click="handleButtonClick('appendNumber', '2')">2</button>
+      <button @click="handleButtonClick('appendNumber', '3')">3</button>
+      <button @click="handleButtonClick('appendOperator', '+')">+</button>
 
-      <button class="zero-button" @click="appendNumber('0')">0</button>
-      <button @click="appendComma">,</button>
-      <button class="equal-sign" @click="calculate">=</button>
+      <button class="zero-button" @click="handleButtonClick('appendNumber', '0')">0</button>
+      <button @click="handleButtonClick('appendComma')">,</button>
+      <button class="equal-sign" @click="handleButtonClick('calculate', null, true)">=</button>
     </div>
   </div>
+
+  <audio ref="Tecla" src="/Tecla.mp3"></audio>
+  <audio ref="Resultado" src="/Resultado.mp3"></audio>
 </template>
 
 <script>
@@ -39,6 +42,32 @@ export default {
     };
   },
   methods: {
+    playSound(soundType) {
+      const sound = soundType === 'equal' ? this.$refs.Resultado : this.$refs.Tecla;
+      
+      // Verifica se o áudio está carregado e pronto para tocar
+      sound.currentTime = 0; // Reinicia o áudio
+      sound.play().catch((error) => {
+        console.error('Erro ao reproduzir o áudio:', error);
+      });
+    },
+    handleButtonClick(action, value = null, isEqual = false) {
+      // Play different sound for "="
+      this.playSound(isEqual ? 'equal' : 'click');
+
+      // Perform the corresponding action
+      if (action === 'clearAll') {
+        this.clearAll();
+      } else if (action === 'appendOperator') {
+        this.appendOperator(value);
+      } else if (action === 'appendNumber') {
+        this.appendNumber(value);
+      } else if (action === 'appendComma') {
+        this.appendComma();
+      } else if (action === 'calculate') {
+        this.calculate();
+      }
+    },
     appendNumber(number) {
       // Append number to the current input and expression
       if (this.currentInput === '' || /[\d,]/.test(this.currentInput)) {
